@@ -1,0 +1,411 @@
+﻿@page
+@model Movie_WebUp.Pages.Movies.IndexModel
+
+@{
+    ViewData["Title"] = "Movie List";
+}
+
+<h1 class="text-white">Movie List</h1>
+
+<style>
+    /* Style Datalist */
+    .dropdown-item {
+        display: block;
+        width: 100%;
+        clear: both;
+        font-weight: 400;
+        color: white;
+        text-align: inherit;
+        text-decoration: none;
+        white-space: nowrap;
+        background-color: transparent;
+        border: 0;
+    }
+
+    .dropdown-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        z-index: 1000;
+        width: 100%;
+        background: black;
+        border: 1px solid gray;
+        color: white;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+    .suggestion-item {
+        padding: 10px;
+        cursor: pointer;
+    }
+
+        .suggestion-item:hover {
+            background: gray;
+        }
+
+    .highlight {
+        color: #ff9800;
+        font-weight: bold;
+    }
+
+    /* Form Styles */
+    form {
+        background-color: #1e1e1e;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .form-select, .form-control {
+        background-color: #333;
+        color: #fff;
+        border: 1px solid #555;
+        padding: 8px 12px;
+        border-radius: 5px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+    }
+
+        .form-select:hover, .form-control:hover {
+            border-color: #ff9800;
+        }
+
+        .form-select:focus, .form-control:focus {
+            border-color: #ff9800;
+            box-shadow: 0 0 5px rgba(255, 152, 0, 0.5);
+        }
+
+    .btn-primary {
+        background-color: #ff9800;
+        border: none;
+        font-weight: 500;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-primary:hover {
+            background-color: #e68900;
+        }
+
+    /* Table Styles */
+    .table-responsive {
+        margin-top: 20px;
+    }
+
+    .table-dark {
+        background-color: #1e1e1e;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+
+        .table-dark th, .table-dark td {
+            border-color: #333;
+        }
+
+        .table-dark th {
+            background-color: #333;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .table-dark tbody tr {
+            transition: background-color 0.3s ease;
+        }
+
+            .table-dark tbody tr:hover {
+                background-color: rgba(255, 152, 0, 0.1);
+            }
+
+    /* Button Styles */
+    .btn-info {
+        background-color: #17a2b8;
+        border: none;
+        font-weight: 500;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-info:hover {
+            background-color: #138496;
+        }
+
+    .btn-danger {
+        background-color: #dc3545;
+        border: none;
+        font-weight: 500;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+    /* Modal Styles */
+    .modal-content {
+        background-color: #1e1e1e;
+        color: #fff;
+        border-radius: 10px;
+    }
+
+    .modal-header {
+        border-bottom: 1px solid #333;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #333;
+    }
+
+        .modal-footer .btn-secondary {
+            background-color: #6c757d;
+            border: none;
+        }
+
+            .modal-footer .btn-secondary:hover {
+                background-color: #5a6268;
+            }
+
+    /* Custom width for search bar */
+    .search-container {
+        width: 350px; /* Adjust this value to your preferred width */
+    }
+</style>
+<section style="min-height: 100vh;">
+
+    <form class="container mt-3" id="filterForm">
+        @Html.AntiForgeryToken() <!--Anti-CSRF protection-->
+        <div class="row g-4 align-items-center">
+            <div class="col-md-3">
+                <a class="btn btn-primary col-gap-3" asp-page="Create" role="button">Create New</a>
+            </div>
+            <!-- Dropdown for Movie Genre -->
+            <div class="col-md-3">
+                <select class="form-select" id="genreSelect" asp-for="MovieGenreName" asp-items="Model.ListGenres">
+                    <option value="">All Genres</option>
+                </select>
+            </div>
+
+            <!-- Search -->
+            <div class="col-md-3 search-container">
+                <label class="w-100 position-relative">
+                    <input type="text" id="movieSearch" class="form-control" asp-for="SearchString" placeholder="Search by Title" autocomplete="off" />
+                    <div class="dropdown">
+                        <ul id="movieSuggestions" class="dropdown-menu w-100"></ul>
+                    </div>
+                </label>
+            </div>
+        </div>
+    </form>
+
+    <div class="table-responsive mt-4">
+        <table class="table table-dark table-striped table-bordered border-black">
+            <thead>
+                <tr>
+                    <th>@Html.DisplayNameFor(model => model.MoviesList[0].Title)</th>
+                    <th>@Html.DisplayNameFor(model => model.MoviesList[0].ReleaseDate)</th>
+                    <th>@Html.DisplayNameFor(model => model.MoviesList[0].Description)</th>
+                    <th>@Html.DisplayNameFor(model => model.MoviesList[0].Genre)</th>
+                    <th>@Html.DisplayNameFor(model => model.MoviesList[0].Price)</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="moviesTableBody">
+                @foreach (var item in Model.MoviesList)
+                {
+                    <tr>
+                        <td>@Html.DisplayFor(modelItem => item.Title)</td>
+                        <td>@Html.DisplayFor(modelItem => item.ReleaseDate)</td>
+                        <td>@Html.DisplayFor(modelItem => item.Description)</td>
+                        <td>@Html.DisplayFor(modelItem => item.Genre)</td>
+                        <td>@Html.DisplayFor(modelItem => item.Price)</td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <a class="btn btn-info" asp-page="./Edit" asp-route-id="@item.Id" role="button">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal-@item.Id">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+
+                                <!-- Delete Modal -->
+                                <div class="modal fade" id="deleteModal-@item.Id" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel-@item.Id" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content bg-dark">
+                                            <div class="modal-header">
+                                                <h4 class="modal-title" id="deleteModalLabel-@item.Id">Are you sure you want to delete this movie?</h4>
+                                            </div>
+                                            <div class="modal-body">
+                                                <dl class="row">
+                                                    <dt class="col-sm-3">Title:</dt>
+                                                    <dd class="col-sm-9">@item.Title</dd>
+                                                    <dt class="col-sm-3">Release Date:</dt>
+                                                    <dd class="col-sm-9">@item.ReleaseDate.ToString("yyyy-MM-dd")</dd>
+                                                    <dt class="col-sm-3">Description:</dt>
+                                                    <dd class="col-sm-9">@item.Description</dd>
+                                                    <dt class="col-sm-3">Genre:</dt>
+                                                    <dd class="col-sm-9">@item.Genre</dd>
+                                                    <dt class="col-sm-3">Price:</dt>
+                                                    <dd class="col-sm-9">$@item.Price</dd>
+                                                </dl>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <form method="post" asp-page-handler="Delete">
+                                                    <input type="hidden" name="id" value="@item.Id" />
+                                                    <button type="submit" value="Delete" class="btn btn-danger">Delete</button>
+                                                </form>
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const searchInput = document.getElementById("movieSearch");
+        const movieSuggestions = document.getElementById("movieSuggestions");
+        const genreSelect = document.getElementById("genreSelect");
+        const moviesTableBody = document.getElementById("moviesTableBody");
+        let currentIndex = -1;
+
+        function highlightText(movieTitle, searchTerm) {
+            const lowerSearchTerm = searchTerm.toLowerCase();
+            const index = movieTitle.toLowerCase().indexOf(lowerSearchTerm);
+            if (index === -1) return movieTitle;
+
+            return movieTitle.substring(0, index) +
+                   "<strong class='highlight'>" + movieTitle.substring(index, index + searchTerm.length) + "</strong>" +
+                   movieTitle.substring(index + searchTerm.length);
+        }
+
+        async function fetchMovieSuggestions(query) {
+            if (!query.trim()) {
+                movieSuggestions.classList.remove("show");
+                return;
+            }
+
+            try {
+                const selectedGenre = genreSelect.value;
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                const response = await fetch(`/Movies/Movie_List?handler=Search&term=${encodeURIComponent(query)}${selectedGenre ? `&genre=${encodeURIComponent(selectedGenre)}` : ''}`, {
+                    headers: {
+                        'RequestVerificationToken': token
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const movies = await response.json();
+
+                movieSuggestions.innerHTML = "";
+                if (movies.length === 0) {
+                    movieSuggestions.classList.remove("show");
+                    return;
+                }
+
+                movies.forEach((movie, index) => {
+                    let listItem = document.createElement("li");
+                    listItem.classList.add("dropdown-item", "suggestion-item");
+                    listItem.innerHTML = highlightText(movie, query);
+                    listItem.dataset.title = movie;
+                    listItem.dataset.index = index;
+                    movieSuggestions.appendChild(listItem);
+                });
+
+                movieSuggestions.classList.add("show");
+                currentIndex = -1;
+            } catch (error) {
+                console.error("Error fetching movie suggestions:", error);
+                movieSuggestions.classList.remove("show");
+            }
+        }
+
+        function updateActiveItem(items) {
+            items.forEach((item, index) => {
+                if (index === currentIndex) {
+                    item.classList.add("active");
+                } else {
+                    item.classList.remove("active");
+                }
+            });
+        }
+
+        function filterMovies() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedGenre = genreSelect.value;
+
+            const rows = moviesTableBody.querySelectorAll("tr");
+
+            rows.forEach(row => {
+                const title = row.cells[0].textContent.toLowerCase();
+                const genre = row.cells[3].textContent;
+
+                const matchesGenre = !selectedGenre || genre === selectedGenre;
+                const matchesSearch = !searchTerm || title.includes(searchTerm);
+
+                row.style.display = matchesGenre && matchesSearch ? "" : "none";
+            });
+        }
+
+        // Event listeners
+        searchInput.addEventListener("input", function () {
+            fetchMovieSuggestions(this.value);
+            filterMovies();
+        });
+
+        searchInput.addEventListener("keydown", function (e) {
+            let items = document.querySelectorAll(".suggestion-item");
+            if (items.length === 0) return;
+
+            if (e.key === "ArrowDown") {
+                e.preventDefault();
+                currentIndex = (currentIndex + 1) % items.length;
+                updateActiveItem(items);
+            } else if (e.key === "ArrowUp") {
+                e.preventDefault();
+                currentIndex = (currentIndex - 1 + items.length) % items.length;
+                updateActiveItem(items);
+            } else if (e.key === "Enter") {
+                e.preventDefault();
+                if (currentIndex > -1) {
+                    searchInput.value = items[currentIndex].dataset.title;
+                    movieSuggestions.classList.remove("show");
+                    filterMovies();
+                }
+            }
+        });
+
+        movieSuggestions.addEventListener("click", function (e) {
+            if (e.target.classList.contains("suggestion-item")) {
+                searchInput.value = e.target.dataset.title;
+                movieSuggestions.classList.remove("show");
+                filterMovies();
+            }
+        });
+
+        document.addEventListener("click", function (e) {
+            if (!searchInput.contains(e.target) && !movieSuggestions.contains(e.target)) {
+                movieSuggestions.classList.remove("show");
+            }
+        });
+
+        genreSelect.addEventListener("change", function() {
+            filterMovies();
+            searchInput.value = "";
+            movieSuggestions.classList.remove("show");
+        });
+    });
+</script>

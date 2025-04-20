@@ -1,0 +1,679 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+<style>
+    .search-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+    }
+
+    .input-group {
+        width: 50%;
+        max-width: 600px;
+        border-radius: 50px;
+        overflow: hidden;
+        background: #2c2c2c;
+        border: 1px solid #444;
+    }
+
+    .input-group-text {
+        background: transparent;
+        border: none;
+        color: #ff9800;
+        font-size: 1.2rem;
+        padding: 10px 15px;
+    }
+
+    .form-control {
+        background: transparent;
+        border: none;
+        color: white;
+        padding: 12px 15px;
+        font-size: 1rem;
+        outline: none;
+    }
+
+        .form-control::placeholder {
+            color: #888;
+        }
+
+        .form-control:focus {
+            background: #1e1e1e;
+            color: white;
+            border: none;
+            box-shadow: 0px 0px 8px rgba(255, 152, 0, 0.5);
+        }
+
+    /* Style Datalist */
+
+    .dropdown-item {
+        display: block;
+        width: 100%;
+        clear: both;
+        font-weight: 400;
+        color: white;
+        text-align: inherit;
+        text-decoration: none;
+        white-space: nowrap;
+        background-color: transparent;
+        border: 0;
+    }
+
+    .dropdown-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        z-index: 1000;
+        width: 100%;
+        background: black;
+        border: 1px solid gray;
+        color: white;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+        .dropdown-menu.show {
+            display: block;
+        }
+
+    .suggestion-item {
+        padding: 10px;
+        cursor: pointer;
+    }
+
+        .suggestion-item:hover {
+            background: gray;
+        }
+
+    .highlight {
+        color: #ff9800;
+        font-weight: bold;
+    }
+
+    /* Center the hero section in the middle of the page */
+    .hero-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 120vh; /* Full viewport height */
+    }
+
+    /* Fixed size for the hero section */
+    .hero-section {
+        height: 108vh; /* 70% of viewport height */
+        width: 90%; /* 90% of viewport width */
+        max-width: 1200px; /* Limit max width */
+        overflow: hidden; /* Hide overflow content */
+        position: relative; /* For positioning child elements */
+        background-color: #000; /* Optional: Add a background color */
+        border-radius: 15px; /* Optional: Rounded corners */
+        box-shadow: 0px 4px 10px rgba(255, 152, 0, 0.3); /* Soft shadow */
+    }
+
+    /* Position movie details at the bottom center of the carousel  !!!! */
+    .latest-movie-details {
+        position: absolute;
+        bottom: -27%;
+        left: 50%;
+        transform: translateX(-50%);
+        /* background: rgba(0, 0, 0, 0.7); */
+        padding: 15px;
+        border-radius: 10px;
+        width: 80%;
+        text-align: center;
+        color: white;
+    }
+
+    /* Style carousel buttons */
+    .custom-prev, .custom-next {
+        z-index: 10;
+        width: 10%;
+    }
+
+    /* Improve the image size inside carousel */
+    .carousel img {
+        height: 600px; /* Set a fixed height */
+        object-fit: cover; /* Ensure proper aspect ratio */
+        border-radius: 10px;
+    }
+
+
+    /* 12 movies section*/
+    #latestMoviesCarousel .card {
+        background-color: #1e1e1e;
+        border: none;
+        border-radius: 10px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        #latestMoviesCarousel .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0px 4px 15px rgba(255, 152, 0, 0.3);
+        }
+
+        #latestMoviesCarousel .card img {
+            border-radius: 10px 10px 0 0;
+        }
+
+    /* Carousel controls styling */
+    #latestMoviesCarousel .carousel-control-prev,
+    #latestMoviesCarousel .carousel-control-next {
+        width: 5%; /* Adjust the width of the carousel controls */
+    }
+
+    #latestMoviesCarousel .carousel-control-prev-icon,
+    #latestMoviesCarousel .carousel-control-next-icon {
+        background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background for controls */
+        border-radius: 50%; /* Circular controls */
+        padding: 10px; /* Add padding to the controls */
+    }
+
+    /* All Movies Grid */
+    .movie-card {
+        background-color: #1e1e1e;
+        border: none;
+        border-radius: 10px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .movie-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0px 4px 15px rgba(255, 152, 0, 0.3);
+    }
+
+    .movie-image-wrapper {
+        height: 400px;
+        overflow: hidden;
+        border-radius: 10px 10px 0 0;
+    }
+
+    .movie-thumbnail {
+        transition: transform 0.3s ease;
+    }
+
+        .movie-thumbnail:hover {
+            transform: scale(1.1);
+        }
+
+    .card-footer {
+        background-color: #1e1e1e;
+        border-radius: 0 0 10px 10px;
+    }
+
+    .btn-primary {
+        background-color: #ff9800;
+        border: none;
+        font-weight: 500;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-primary:hover {
+            background-color: #e68900;
+        }
+
+    /* Star Rating */
+    .star {
+        font-size: 20px;
+        color: gray;
+    }
+
+    .filled {
+        color: gold;
+    }
+
+    /* Modal */
+    .modal-content {
+        background-color: #1e1e1e;
+        color: #fff;
+        border-radius: 10px;
+    }
+
+    .modal-header {
+        border-bottom: 1px solid #333;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #333;
+    }
+
+    .btn-danger {
+        background-color: #ff4444;
+        border: none;
+    }
+
+        .btn-danger:hover {
+            background-color: #cc0000;
+        }
+</style>
+
+<form class="search-container position-relative">
+    <div class="input-group">
+        <span class="input-group-text">
+            <i class="bi bi-search"></i>
+        </span>
+        <input type="text" id="movieSearch" class="form-control" placeholder="Search for a movie..." autocomplete="off">
+    </div>
+    <div class="dropdown">
+        <ul id="movieSuggestions" class="dropdown-menu w-100"></ul>
+    </div>
+</form>
+
+
+
+
+
+<section>
+    <div class="hero-container">
+    <div class="hero-section">
+            <h2 class="text-center text-white">Most Viewed Movies</h2>
+        <div class="container">
+            <div class="row">
+                <!-- Carousel for the most viewd movies -->
+                <div class="col-md-8 mx-auto position-relative">
+                    <div id="movieCarousel" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            @{
+                                bool isFirst = true; // Flag to set the first item as active
+                            }
+                            @foreach (var movie in Model.MostViewedMovies)
+                            {
+                                <div class="carousel-item @(isFirst ? "active" : "")">
+                                    <img src="data:@movie.PhotoContentType;base64,@Convert.ToBase64String(movie.Photo)"
+                                         class="d-block w-50 mx-auto mt-2 img-fluid"
+                                         loading="lazy"
+                                         alt="@movie.Title"
+                                         data-title="@movie.Title"
+                                         data-genre="@movie.Genre"
+                                         data-price="@movie.Price.ToString("0.00")" />
+                                </div>
+                                isFirst = false; // Set the flag to false after the first iteration
+                            }
+                        </div>
+                        <!-- Custom Previous Button -->
+                        <button class="carousel-control-prev custom-prev" type="button" data-bs-target="#movieCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+
+                        <!-- Custom Next Button -->
+                        <button class="carousel-control-next custom-next" type="button" data-bs-target="#movieCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+
+                        <!-- Latest Movie Details Overlay (Inside Next & Prev Buttons) -->
+                        <div class="latest-movie-details text-white text-center">
+                            <h2 id="carouselMovieTitle">@Model.MostViewedMovies[0].Title</h2>
+                            <p><strong>Genre:</strong> <span id="carouselMovieGenre">@Model.MostViewedMovies[0].Genre</span></p>
+                            <p><strong>Price:</strong> $<span id="carouselMoviePrice">@Model.MostViewedMovies[0].Price.ToString("0.00")</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</section>
+<!--Js for the Carousel of the 3 most viewed movies -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const carousel = document.getElementById("movieCarousel");
+        const movieTitle = document.getElementById("carouselMovieTitle");
+        const movieGenre = document.getElementById("carouselMovieGenre");
+        const moviePrice = document.getElementById("carouselMoviePrice");
+
+        carousel.addEventListener("slid.bs.carousel", function () {
+            const activeItem = carousel.querySelector(".carousel-item.active img"); // Get active image
+            if (activeItem) {
+                movieTitle.textContent = activeItem.getAttribute("data-title");
+                movieGenre.textContent = activeItem.getAttribute("data-genre");
+                moviePrice.textContent = activeItem.getAttribute("data-price");
+            }
+        });
+    });
+</script>
+<!-- search bar js-->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const searchInput = document.getElementById("movieSearch");
+        const movieSuggestions = document.getElementById("movieSuggestions");
+        let currentIndex = -1;
+
+        function highlightText(movieTitle, searchTerm) {
+            const lowerSearchTerm = searchTerm.toLowerCase();
+            const index = movieTitle.toLowerCase().indexOf(lowerSearchTerm);
+            if (index === -1) return movieTitle;
+
+            return movieTitle.substring(0, index) +
+                   "<strong class='highlight'>" + movieTitle.substring(index, index + searchTerm.length) + "</strong>" +
+                   movieTitle.substring(index + searchTerm.length);
+        }
+
+        async function fetchMovieSuggestions(query) {
+            if (!query.trim()) {
+                movieSuggestions.classList.remove("show");
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Index?handler=Search&term=${encodeURIComponent(query)}`);
+                const movies = await response.json();
+
+                movieSuggestions.innerHTML = "";
+                if (movies.length === 0) {
+                    movieSuggestions.classList.remove("show");
+                    return;
+                }
+
+                movies.forEach((movie, index) => {
+                    let listItem = document.createElement("li");
+                    listItem.classList.add("dropdown-item", "suggestion-item");
+                    listItem.innerHTML = highlightText(movie, query);
+                    listItem.dataset.title = movie;
+                    listItem.dataset.index = index;
+                    movieSuggestions.appendChild(listItem);
+                });
+
+                movieSuggestions.classList.add("show");
+                currentIndex = -1;
+            } catch (error) {
+                console.error("Error fetching movie suggestions:", error);
+            }
+        }
+
+        function updateActiveItem(items) {
+            items.forEach((item, index) => {
+                if (index === currentIndex) {
+                    item.classList.add("active");
+                } else {
+                    item.classList.remove("active");
+                }
+            });
+        }
+
+        function filterMovies(searchTerm) {
+            const movieCards = document.querySelectorAll(".movie-card");
+            movieCards.forEach(card => {
+                let movieTitle = card.querySelector(".card-title").textContent.toLowerCase();
+                if (movieTitle.includes(searchTerm.toLowerCase())) {
+                    card.parentElement.style.display = "block";
+                } else {
+                    card.parentElement.style.display = "none";
+                }
+            });
+        }
+
+        searchInput.addEventListener("input", function () {
+            fetchMovieSuggestions(this.value);
+        });
+
+        searchInput.addEventListener("keydown", function (e) {
+            let items = document.querySelectorAll(".suggestion-item");
+            if (items.length === 0) return;
+
+            if (e.key === "ArrowDown") {
+                e.preventDefault();
+                currentIndex = (currentIndex + 1) % items.length;
+                updateActiveItem(items);
+            } else if (e.key === "ArrowUp") {
+                e.preventDefault();
+                currentIndex = (currentIndex - 1 + items.length) % items.length;
+                updateActiveItem(items);
+            } else if (e.key === "Enter") {
+                e.preventDefault();
+                if (currentIndex > -1) {
+                    searchInput.value = items[currentIndex].dataset.title;
+                    movieSuggestions.classList.remove("show");
+                    filterMovies(searchInput.value);
+                }
+            }
+        });
+
+        movieSuggestions.addEventListener("click", function (e) {
+            if (e.target.classList.contains("suggestion-item")) {
+                searchInput.value = e.target.dataset.title;
+                movieSuggestions.classList.remove("show");
+                filterMovies(searchInput.value);
+            }
+        });
+
+        document.addEventListener("click", function (e) {
+            if (!searchInput.contains(e.target) && !movieSuggestions.contains(e.target)) {
+                movieSuggestions.classList.remove("show");
+            }
+        });
+    });
+</script>
+
+
+<!-- 12 latest Movies Carousel-->
+<section class="latest-movie" id="latest-movie">
+    <div class="container mt-5">
+        <h2 class="text-center text-white">Latest Movies</h2>
+        <div id="latestMoviesCarousel" class="carousel slide mt-3" data-bs-ride="carousel">
+            <div class="carousel-inner" id="carousel-inner">
+                <!-- Carousel items will be dynamically added here by JavaScript -->
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#latestMoviesCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#latestMoviesCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+    </div>
+</section>
+<!--JS for the Carousel-->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const carouselInner = document.getElementById("carousel-inner");
+        const movies = @Html.Raw(Json.Serialize(Model.Latest12Movies)); // Serialize the movie data
+
+        // Function to create a carousel item
+        function createCarouselItem(images, isActive) {
+            const carouselItem = document.createElement("div");
+            carouselItem.classList.add("carousel-item");
+            if (isActive) carouselItem.classList.add("active");
+
+            const row = document.createElement("div");
+            row.classList.add("row");
+
+            images.forEach(movie => {
+                const col = document.createElement("div");
+                col.classList.add("col-12", "col-md-3"); // Full width on mobile, 25% on desktop
+
+                const card = document.createElement("div");
+                card.classList.add("card");
+
+                const img = document.createElement("img");
+                img.src = `data:${movie.photoContentType};base64,${movie.photo}`;
+                img.classList.add("img-fluid", "img-thumbnail");
+                img.loading = "lazy";
+                img.alt = movie.title;
+
+                card.appendChild(img);
+                col.appendChild(card);
+                row.appendChild(col);
+            });
+
+            carouselItem.appendChild(row);
+            return carouselItem;
+        }
+
+        // Function to group movies based on screen size
+        function groupMovies(movies, groupSize) {
+            const groupedMovies = [];
+            for (let i = 0; i < movies.length; i += groupSize) {
+                groupedMovies.push(movies.slice(i, i + groupSize));
+            }
+            return groupedMovies;
+        }
+
+        // Determine the group size based on screen width
+        const isMobile = window.innerWidth < 768; // Adjust breakpoint as needed
+        const groupSize = isMobile ? 1 : 4; // 1 image per group on mobile, 4 on desktop  trunring operator short for if-else
+
+        // Group movies and create carousel items
+        const groupedMovies = groupMovies(movies, groupSize);
+        groupedMovies.forEach((group, index) => {
+            const isActive = index === 0; // First item is active
+            const carouselItem = createCarouselItem(group, isActive);
+            carouselInner.appendChild(carouselItem);
+        });
+
+        // Update carousel on window resize
+        window.addEventListener("resize", function () {
+            const newIsMobile = window.innerWidth < 768;
+            if (newIsMobile !== isMobile) {
+                location.reload(); // Reload the page to reinitialize the carousel
+            }
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const searchInput = document.getElementById("movieSearch");
+        const movieCards = document.querySelectorAll(".movie-card");
+        const carousel = document.querySelector(".hero-container");
+        const carouselInner = document.getElementById("latest-movie");
+
+        // Search bar input event listener
+        searchInput.addEventListener("input", function () {
+            let searchTerm = this.value.toLowerCase();
+
+            // Toggle carousel visibility based on search term
+            if (searchTerm.trim() !== "") {
+                carousel.style.display = "none"; // Hide carousel
+                carouselInner.style.display = "none";
+            } else {
+                carousel.style.display = "flex"; // Show carousel
+                carouselInner.style.display = "flex";
+            }
+
+            // Filter movie cards based on search input
+            movieCards.forEach(card => {
+                let movieTitle = card.querySelector(".card-title").textContent.toLowerCase();
+                if (movieTitle.includes(searchTerm.toLowerCase())) {
+                    card.parentElement.style.display = "block"; // Show matching movie
+                } else {
+                    card.parentElement.style.display = "none"; // Hide non-matching movie
+                }
+            });
+        });
+    });
+
+</script>
+
+<!-- All Movies Grid  -->
+<section>
+    <div class="container-fluid mt-4">
+        <h2 class="text-center text-white">All Movies</h2>
+        <div class="row g-4 mt-3">
+            @foreach (var movie in Model.AllMovies)
+            {
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="card movie-card">
+                        <!-- Movie Image -->
+                        <div class="movie-image-wrapper">
+                            <a asp-page="/Movies/Details" asp-route-id="@movie.Id">
+                                <img src="data:@movie.PhotoContentType;base64,@Convert.ToBase64String(movie.Photo)"
+                                     class="img-fluid movie-thumbnail"
+                                     loading="lazy"
+                                     alt="@movie.Title" />
+
+                            </a>
+                        </div>
+
+                        <!-- Card Footer -->
+                        <div class="card-footer bg-dark">
+                            <h5 class="card-title text-white text-truncate" title="@movie.Title">@movie.Title</h5>
+                            <a asp-page="/Movies/Category" asp-route-genre="@movie.Genre" class="card-text text-truncate d-block" title="@movie.Genre">
+                                @movie.Genre
+                            </a>
+                            <!-- Movie Rating -->
+                            <div class="movie-rating text-white">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <span class="star @(i <= Math.Round(movie.AverageRating) ? "filled" : "empty")">&#9733;</span>
+                                }
+                                (@movie.AverageRating.ToString("0.0"))
+                            </div>
+                            <!-- Movie Price -->
+                            <p class="card-text text-white">$@movie.Price.ToString("0.00")</p>
+                            <a href="#" class="btn btn-primary movie-thumbnail"
+                               data-bs-toggle="modal"
+                               data-bs-target="#movieModal"
+                               data-title="@movie.Title"
+                               data-description="@movie.Description"
+                               data-genre="@movie.Genre"
+                               data-rating="@movie.AverageRating"
+                               data-price="@movie.Price">
+                                Read More
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Global Movie Modal (Only One) -->
+<div class="modal fade" id="movieModal" tabindex="-1" aria-labelledby="movieModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="movieModalLabel">Movie Title</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="modalMovieDescription"></p>
+                <ul class="list-unstyled">
+                    <li>Genre: <span id="modalMovieGenre"></span></li>
+                    <li>Price: $<span id="modalMoviePrice"></span></li>
+                    <li>Rating: <span id="modalMovieRating"></span></li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript to Populate Modal Dynamically -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var movieThumbnails = document.querySelectorAll(".btn.movie-thumbnail");
+        var modalTitle = document.getElementById("movieModalLabel");
+        var modalDescription = document.getElementById("modalMovieDescription");
+        var modalGenre = document.getElementById("modalMovieGenre");
+        var modalRating = document.getElementById("modalMovieRating");
+        var modalPrice = document.getElementById("modalMoviePrice");
+
+        movieThumbnails.forEach(function (thumbnail) {
+            thumbnail.addEventListener("click", function (event) {
+                event.preventDefault();
+
+                modalTitle.textContent = this.getAttribute("data-title");
+                modalDescription.textContent = this.getAttribute("data-description");
+                modalGenre.textContent = this.getAttribute("data-genre");
+                modalPrice.textContent = this.getAttribute("data-price");
+
+                var rating = parseFloat(this.getAttribute("data-rating"));
+                var starsHtml = "";
+                for (var i = 1; i <= 5; i++) {
+                    starsHtml += i <= Math.round(rating) ? "&#9733; " : "&#9734; ";
+                }
+                modalRating.innerHTML = starsHtml + " (" + rating.toFixed(1) + ")";
+            });
+        });
+    });
+</script>
+

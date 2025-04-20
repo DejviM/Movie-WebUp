@@ -1,0 +1,190 @@
+﻿@page
+@model Movie_WebUp.Pages.Movies.CreateModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<style>
+    .form-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 30px;
+    }
+
+    /* Left side (form) */
+    .form-fields {
+        flex: 1;
+        min-width: 600px; /* Adjust width to align inputs with the red line */
+        max-width: 700px; /* Control maximum width */
+        background: #1e1e1e;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 2px 2px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    label {
+        font-weight: bold;
+        color: #fff;
+    }
+
+    .form-group input, .form-group textarea {
+        border-radius: 6px;
+        background: #2d2d2d;
+        color: #fff;
+        border: 1px solid #444;
+        padding: 10px;
+        font-size: 16px;
+    }
+
+        /* Smaller title input */
+        .form-group input#MovieObj_Title {
+            width: 50%; /* Adjust width of title */
+        }
+
+        /* Date input - ends right after the date */
+        .form-group input#MovieObj_ReleaseDate {
+            width: 150px; /* Adjust width to fit date content */
+        }
+
+        /* Shorter price input */
+        .form-group input#MovieObj_Price {
+            width: 150px; /* Make price input shorter */
+        }
+        /* Shorter genre input */
+        .form-group input#MovieObj_Genre {
+            width: 150px; /* Make price input shorter */
+        }
+
+    /* Right side (photo section) */
+    .photo-section {
+        width: 500px; /* Adjust width */
+        background: #1e1e1e;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 2px 2px 15px rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        align-items: center;
+    }
+
+    .photo-preview {
+        width: 100%;
+        height: 300px; /* Increase height */
+        background: #2d2d2d;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+        .photo-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+    .save-button {
+        width: 150px;
+        font-size: 16px;
+        padding: 10px;
+        font-weight: bold;
+        background-color: #ffc107 !important;
+        border: none;
+        border-radius: 6px;
+        color: black !important;
+        transition: background 0.3s ease;
+    }
+
+        .save-button:hover {
+            background-color: #e0a800 !important;
+        }
+</style>
+
+<h1 class="text-white">Create Movie</h1>
+
+<div>
+    <a asp-page="./Movie_List" class="btn btn-warning">
+        <span class="glyphicon glyphicon-arrow-left"></span> Back to List
+    </a>
+</div>
+<hr />
+
+<div class="form-container">
+    <form method="post" enctype="multipart/form-data" class="d-flex flex-wrap w-100 gap-4">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <!-- Left Column - Form Fields -->
+        <div class="form-fields">
+            <div class="form-group">
+                <span class="text-danger">*</span>
+                <label asp-for="MovieObj.Title" class="control-label"></label>
+                <input asp-for="MovieObj.Title" class="form-control" />
+                <span asp-validation-for="MovieObj.Title" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="MovieObj.ReleaseDate" class="control-label"></label>
+                <input asp-for="MovieObj.ReleaseDate" class="form-control" />
+                <span asp-validation-for="MovieObj.ReleaseDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="MovieObj.Description" class="control-label"></label>
+                <textarea asp-for="MovieObj.Description" class="form-control" rows="4"></textarea>
+                <span asp-validation-for="MovieObj.Description" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <span class="text-danger">*</span>
+                <label asp-for="MovieObj.Price" class="control-label"></label>
+                <input asp-for="MovieObj.Price" class="form-control" />
+                <span asp-validation-for="MovieObj.Price" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <span class="text-danger">*</span>
+                <label asp-for="MovieObj.Genre" class="control-label"></label>
+                <input asp-for="MovieObj.Genre" class="form-control" />
+                <span asp-validation-for="MovieObj.Genre" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- Right Column - Photo Section -->
+        <div class="photo-section">
+            <div class="form-group">
+                <label class="control-label">Movie Poster</label>
+                <div class="photo-preview">
+                    <img id="photoPreview" src="https://via.placeholder.com/300x200?text=No+Image" alt="Preview" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="PhotoUpload" class="control-label">Upload Photo</label>
+                <input asp-for="PhotoUpload" type="file" class="form-control"
+                       onchange="document.getElementById('photoPreview').src = window.URL.createObjectURL(this.files[0])" />
+                <span asp-validation-for="PhotoUpload" class="text-danger"></span>
+            </div>
+            <div class="form-group mt-auto">
+                <input type="submit" value="Create" class="btn save-button w-100" />
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // Live preview for photo upload
+        document.getElementById('PhotoUpload').addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                const preview = document.getElementById('photoPreview');
+                preview.src = URL.createObjectURL(e.target.files[0]);
+            }
+        });
+    </script>
+}

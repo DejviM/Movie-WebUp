@@ -1,0 +1,339 @@
+﻿@page
+@model Movie_WebUp.Pages.Movies.DetailsModel
+
+@{
+    ViewData["Title"] = "Details";
+}
+<style>
+    /* General Styles */
+    body {
+        font-family: 'Poppins', sans-serif;
+        color: #fff;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+    }
+
+    h3 {
+        font-size: 2rem;
+        margin-bottom: 15px;
+    }
+
+    h5 {
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+    }
+
+    p {
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
+
+    /* Movie Image Section */
+    .movie-image-wrapper {
+        background-color: #1e1e1e; /* Slightly lighter than background */
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .movie-image {
+        width: 100%;
+        height: 500px;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+        .movie-image:hover {
+            transform: scale(1.05); /* Slight zoom on hover */
+        }
+
+    /* Movie Info Section */
+    .movie-info {
+        background-color: #1e1e1e;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .rating-section {
+        margin-top: 20px;
+    }
+
+    /* Star Rating */
+    .star-rating {
+        font-size: 28px;
+        color: #ccc;
+    }
+
+        .star-rating .star {
+            cursor: pointer;
+            transition: color 0.2s, transform 0.2s;
+        }
+
+            .star-rating .star.hover {
+                color: #ffcc00;
+                transform: scale(1.2);
+            }
+
+            .star-rating .star.selected {
+                color: #ffcc00;
+            }
+
+    /* Submit Button */
+    .btn-info {
+        background-color: #ff9800;
+        border: none;
+        font-weight: 500;
+        padding: 10px 20px;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-info:hover {
+            background-color: #e68900;
+        }
+
+    /* Chart Section */
+    .chart-container {
+        background-color: #1e1e1e;
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 30px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Dropdown Menu */
+    .form-select {
+        background-color: #333;
+        color: #fff;
+        border: 1px solid #555;
+        padding: 8px 12px;
+        border-radius: 5px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+    }
+
+        .form-select:hover {
+            border-color: #ff9800;
+        }
+
+        .form-select:focus {
+            border-color: #ff9800;
+            box-shadow: 0 0 5px rgba(255, 152, 0, 0.5);
+        }
+</style>
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- Left Column: Movie Image -->
+        <div class="col-md-6">
+            <!-- Title on top of the image -->
+            <h1 class="text-white mb-3">@Model.MovieObj.Title</h1>
+            <div class="movie-image-wrapper">
+                <img src="data:@Model.MovieObj.PhotoContentType;base64,@Convert.ToBase64String(Model.MovieObj.Photo)"
+                     class="img-fluid rounded img-size"
+                     alt="@Model.MovieObj.Title" />
+            </div>
+        </div>
+
+        <!-- Right Column: Movie Information -->
+        <div class="col-md-6">
+            <div class="movie-info">
+                <h3>Details</h3>
+                <p><strong>All Views:</strong> @Model.MovieObj.Views</p>
+                <p><strong>Description:</strong> @Model.MovieObj.Description</p>
+                <p><strong>Genre:</strong> @Model.MovieObj.Genre</p>
+                <div class="rating-section">
+                    <h5 class="text-white">Rate this Movie:</h5>
+
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <form method="post" asp-page-handler="Rate">
+                            <input type="hidden" name="movieId" value="@Model.MovieObj.Id" />
+                            <input type="hidden" name="UserRating" id="selectedRating" value="@Model.UserRating" />
+
+                            <div class="star-rating">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <span class="star" data-value="@i" onmouseover="highlightStars(@i)" onmouseout="resetStars()" onclick="setRating(@i)">★</span>
+                                }
+                            </div>
+
+                            <button type="submit" class="btn btn-info mt-2 rounded">Submit Rating</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <p class="text-white">Please <a asp-page="/Account/Login">log in</a> to rate this movie.</p>
+                    }
+
+                    <h5 class="text-white">Average Rating: @Model.AverageRating.ToString("0.0") ★</h5>
+                </div>
+                <p><strong>Price:</strong> $@Model.MovieObj.Price.ToString("0.00")</p>
+            </div>
+            <!-- Chart Container -->
+            <div class="container mt-4">
+                <h4 class="text-white">Views Since Release</h4>
+
+                <!-- Dropdown to Select View Mode -->
+                <label class="text-white me-2">View Mode:</label>
+                <select id="viewMode" class="form-select w-auto d-inline">
+                    <option value="daily">Daily</option>
+                    <option value="monthly">Monthly</option>
+                </select>
+
+                <canvas id="viewsChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+       document.addEventListener("DOMContentLoaded", function () {
+        var ctx = document.getElementById("viewsChart").getContext("2d");
+
+        // Raw Data from Razor Model
+        var viewData = [
+    @foreach (var record in Model.ViewRecords)
+    {
+        <text>{ date: "@record.ViewDate.ToString("yyyy-MM-dd")", count: @record.ViewCount },</text>
+    }
+        ];
+
+        // Function to Get the Last 7 Days with Weekday Names
+        function getLast7DaysData() {
+            let labels = [];
+            let data = [];
+            let today = new Date();
+            let last7Days = [];
+
+            for (let i = 6; i >= 0; i--) {
+                let date = new Date();
+                date.setDate(today.getDate() - i);
+                last7Days.push({
+                    date: date.toISOString().split("T")[0], // Format YYYY-MM-DD
+                    day: date.toLocaleDateString("en-US", { weekday: "long" }) // Get Day Name
+                });
+            }
+
+            last7Days.forEach(dayObj => {
+                let record = viewData.find(v => v.date === dayObj.date);
+                labels.push(dayObj.day);
+                data.push(record ? record.count : 0);
+            });
+
+            return { labels, data };
+        }
+
+        // Function to Get the Last 12 Months Data
+           function getLast12MonthsData() {
+        let labels = [];
+        let data = [];
+        let months = Array(12).fill(null); // Use `null` to stop the line at the last available data
+        let monthLabels = [];
+
+        let today = new Date();
+        let currentYear = today.getFullYear();
+        let currentMonth = today.getMonth(); // 0 = January, 11 = December
+
+        // Create labels for all months
+        for (let i = 0; i < 12; i++) {
+            let date = new Date(currentYear, i, 1);
+            monthLabels.push(date.toLocaleDateString("en-US", { month: "long" }));
+        }
+
+        // Fill in data only up to the current month
+        viewData.forEach(record => {
+            let date = new Date(record.date);
+            if (date.getFullYear() === currentYear && date.getMonth() <= currentMonth) {
+                months[date.getMonth()] = (months[date.getMonth()] || 0) + record.count;
+            }
+        });
+
+        // Replace `null` values with 0, but only for past months (to ensure the line is continuous)
+        for (let i = 0; i <= currentMonth; i++) {
+            if (months[i] === null) {
+                months[i] = 0;
+            }
+        }
+
+        return { labels: monthLabels, data: months };
+    }
+
+        // Create Initial Chart
+        let chartInstance;
+        function renderChart(mode) {
+            if (chartInstance) chartInstance.destroy();
+
+            let { labels, data } = mode === "monthly" ? getLast12MonthsData() : getLast7DaysData();
+            let currentYear = new Date().getFullYear();
+
+            chartInstance = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: `Views in ${currentYear}`,
+                        data: data,
+                        borderColor: "rgba(75, 192, 192, 1)",
+                        backgroundColor: "rgba(75, 192, 192, 0.2)",
+                        borderWidth: 2,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // Initial Load
+        renderChart("daily");
+
+        // Handle Dropdown Change
+        document.getElementById("viewMode").addEventListener("change", function () {
+            renderChart(this.value);
+        });
+    });
+
+
+    function resetStars() {
+        const stars = document.querySelectorAll('.star-rating .star');
+        const selectedRating = document.getElementById('selectedRating').value;
+        stars.forEach((star, index) => {
+            if (index < selectedRating) {
+                star.classList.add('selected');
+            } else {
+                star.classList.remove('selected', 'hover');
+            }
+        });
+    }
+
+    function setRating(value) {
+        document.getElementById('selectedRating').value = value;
+        const stars = document.querySelectorAll('.star-rating .star');
+        stars.forEach((star, index) => {
+            if (index < value) {
+                star.classList.add('selected');
+            } else {
+                star.classList.remove('selected');
+            }
+        });
+    }
+
+    // Initialize stars based on the user's current rating
+    document.addEventListener('DOMContentLoaded', () => {
+        resetStars();
+    });
+</script>

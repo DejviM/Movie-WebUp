@@ -1,0 +1,33 @@
+﻿@inject SignInManager<IdentityUser> SignInManager
+@{
+    var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
+}
+<style>
+    .nav-pills .nav-link {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: #fff !important; /* White text */
+        margin: 0 0.75rem; /* Spacing between links */
+        padding: 0.5rem 1rem; /* Padding for clickable area */
+        border-radius: 5px; /* Rounded corners */
+        transition: all 0.3s ease; /* Smooth transitions */
+    }
+
+        .nav-pills .nav-link:hover {
+            background-color: #ff9800; /* Orange background on hover */
+            color: #000 !important; /* Black text on hover */
+        }
+
+        .nav-pills .nav-link.active {
+            background-color: #ff9800; /* Orange background for active link */
+            color: #000 !important; /* Black text for active link */
+        }
+</style>
+
+<ul class="nav nav-pills flex-column">
+    <li class="nav-item"><a class="nav-link @ManageNavPages.IndexNavClass(ViewContext)" id="profile" asp-page="./Index">Profile</a></li>
+    <li class="nav-item"><a class="nav-link @ManageNavPages.EmailNavClass(ViewContext)" id="email" asp-page="./Email">Email</a></li>
+    <li class="nav-item"><a class="nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)" id="change-password" asp-page="./ChangePassword">Password</a></li>
+
+    <li class="nav-item"><a class="nav-link @ManageNavPages.PersonalDataNavClass(ViewContext)" id="personal-data" asp-page="./PersonalData">Personal data</a></li>
+</ul>

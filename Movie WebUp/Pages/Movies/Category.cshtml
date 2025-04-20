@@ -1,0 +1,270 @@
+﻿@page
+@model Movie_WebUp.Pages.Movies.CategoryModel
+@{
+    ViewData["Title"] = "Movie Categories";
+}
+
+<style>
+    h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #ff9800;
+        text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+        animation: fadeIn 1s ease-in-out;
+    }
+
+    .genre-btn {
+        border-radius: 50px;
+        padding: 10px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        background-color: #ff9800;
+        color: black;
+        border: none;
+        transition: background 0.3s ease;
+    }
+
+        .genre-btn:hover {
+            background-color: #e68900;
+        }
+
+    .custom-dropdown {
+        width: 150px;
+        display: inline-block;
+    }
+
+        .custom-dropdown select {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            background-color: #333;
+            border: 2px solid #ff9800;
+            border-radius: 5px;
+            cursor: pointer;
+            outline: none;
+        }
+
+    .movie-card {
+        background-color: #1e1e1e;
+        border: none;
+        border-radius: 10px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .movie-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0px 4px 15px rgba(255, 152, 0, 0.3);
+        }
+
+    .movie-image-wrapper {
+        height: 400px;
+        overflow: hidden;
+        border-radius: 10px 10px 0 0;
+    }
+
+    .movie-thumbnail {
+        transition: transform 0.3s ease;
+    }
+
+        .movie-thumbnail:hover {
+            transform: scale(1.1);
+        }
+
+    .card-footer {
+        background-color: #1e1e1e;
+        border-radius: 0 0 10px 10px;
+    }
+
+    .btn-primary {
+        background-color: #ff9800;
+        border: none;
+        font-weight: 500;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-primary:hover {
+            background-color: #e68900;
+        }
+
+    /* Star Rating */
+    .star {
+        font-size: 20px;
+        color: gray;
+    }
+
+    .filled {
+        color: gold;
+    }
+
+    /* Hide the chart initially */
+    #genreViewsChartContainer {
+        display: none;
+    }
+</style>
+<section style="min-height:100vh;">
+<div class="container mt-4">
+    <h2 class="text-white text-center display-4 font-weight-bold mb-4">Select a Genre to Explore Movies and Stats</h2>
+
+
+    <!-- Genre Buttons -->
+    <div class="d-flex flex-wrap gap-3 mb-4">
+        @foreach (var genre in Model.Genres)
+        {
+            <button class="btn genre-btn" data-genre="@genre">@genre</button>
+        }
+    </div>
+
+    <!-- Movie Cards -->
+    <div id="movie-container" class="row g-4">
+        @if (Model.MoviesList.Any())
+        {
+            @foreach (var movie in Model.MoviesList)
+            {
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="card movie-card">
+                        <div class="movie-image-wrapper">
+                            <a asp-page="/Movies/Details" asp-route-id="@movie.Id">
+                                <img src="data:@movie.PhotoContentType;base64,@Convert.ToBase64String(movie.Photo)"
+                                     class="img-fluid movie-thumbnail"
+                                     loading="lazy"
+                                     alt="@movie.Title" />
+                            </a>
+                        </div>
+                        <div class="card-footer">
+                            <h5 class="text-white">@movie.Title</h5>
+                            <p class="text-warning">@movie.Genre</p>
+                            <div class="text-white">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <span class="star @(i <= Math.Round(movie.AverageRating) ? "filled" : "empty")">&#9733;</span>
+                                }
+                                (@movie.AverageRating.ToString("0.0"))
+                            </div>
+                            <p class="text-white">$@movie.Price.ToString("0.00")</p>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+
+    <!-- Year Dropdown -->
+    <label class="text-white mt-4">Select Year:</label>
+    <div class="custom-dropdown">
+        <select id="yearDropdown">
+            @for (int year = DateTime.Now.Year; year >= 2000; year--)
+            {
+                <option value="@year">@year</option>
+            }
+        </select>
+    </div>
+
+    <!-- Chart (Initially Hidden) -->
+    <div id="genreViewsChartContainer" class="container mt-4">
+        <h4 class="text-white">Monthly Views</h4>
+        <canvas id="genreViewsChart"></canvas>
+    </div>
+</div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let selectedGenre = "@Model.SelectedGenre";
+
+    // Handle genre button clicks
+    document.querySelectorAll(".genre-btn").forEach(button => {
+        button.addEventListener("click", function () {
+            selectedGenre = this.getAttribute("data-genre");
+            window.location.href = `?genre=${selectedGenre}`;
+        });
+    });
+
+    // Wait for DOM to load before initializing the chart
+    document.addEventListener("DOMContentLoaded", function () {
+        var canvas = document.getElementById("genreViewsChart");
+        if (!canvas) {
+            console.error("Canvas element for chart not found!");
+            return;
+        }
+
+        var ctx = canvas.getContext("2d");
+
+        // Initialize Chart.js
+        var chart = new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: [],
+                datasets: [{
+                    label: "Views",
+                    data: [],
+                    backgroundColor: "rgba(255, 152, 0, 0.2)", // Adjust background color
+                    borderColor: "#ff9800",
+                    borderWidth: 2,
+                    fill: true // Fill the area under the line
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { title: { display: true, text: "Month" } },
+                    y: { beginAtZero: true, title: { display: true, text: "Views" } }
+                }
+            }
+        });
+
+        // Function to update the chart data
+        function updateChart() {
+            if (!selectedGenre) return;
+
+            var year = document.getElementById("yearDropdown").value;
+            var currentYear = new Date().getFullYear();
+            var currentMonth = new Date().getMonth() + 1; // JavaScript months are 0-based, so add 1
+
+            console.log(`Fetching data for genre: ${selectedGenre}, year: ${year}`);
+
+            fetch(`?handler=GenreViews&genre=${encodeURIComponent(selectedGenre)}&year=${year}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Data received:", data);
+
+                    const monthNames = [
+                        "January", "February", "March", "April", "May", "June",
+                        "July", "August", "September", "October", "November", "December"
+                    ];
+
+                    let viewsData = new Array(12).fill(null); // Initialize all months with null
+
+                    // Populate views data from API response
+                    data.forEach(d => {
+                        viewsData[d.month - 1] = d.views; // Month numbers are 1-based in data
+                    });
+
+                    if (parseInt(year) === currentYear) {
+                        // Keep future months as null for the current year
+                        for (let i = currentMonth; i < 12; i++) {
+                            viewsData[i] = null;
+                        }
+                    }
+
+                    // Set labels and update chart
+                    chart.data.labels = monthNames;
+                    chart.data.datasets[0].data = viewsData;
+                    chart.update();
+
+                    // Show the chart container after updating data
+                    document.getElementById("genreViewsChartContainer").style.display = 'block';
+                })
+                .catch(error => console.error("Error fetching chart data:", error));
+        }
+
+        // Update chart when the year dropdown changes
+        document.getElementById("yearDropdown").addEventListener("change", updateChart);
+
+        // Initial chart update when the page loads
+        if (selectedGenre) {
+            updateChart();
+        }
+    });
+</script>

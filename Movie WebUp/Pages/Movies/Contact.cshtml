@@ -1,0 +1,122 @@
+﻿@page
+@model Movie_WebUp.Pages.Movies.ContactModel
+@{
+    ViewData["Title"] = "Contact Us";
+
+}
+<style>
+
+
+    /* About Us Section */
+    .about-us {
+        background-color: #1e1e1e; /* Slightly lighter than background */
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        margin-bottom: 30px;
+    }
+
+    /* Google Map Section */
+    .map-container {
+        background-color: #1e1e1e;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .ratio {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    /* Contact Form Section */
+    .contact-form {
+        background-color: #1e1e1e;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .form-control {
+        background-color: #333;
+        color: #fff;
+        border: 1px solid #555;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .form-control:focus {
+            border-color: #ff9800;
+            box-shadow: 0 0 5px rgba(255, 152, 0, 0.5);
+            outline: none;
+        }
+
+    .form-label {
+        font-weight: 500;
+        color: #fff;
+    }
+
+    .btn-primary {
+        background-color: #ff9800;
+        border: none;
+        font-weight: 500;
+        padding: 10px 20px;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-primary:hover {
+            background-color: #e68900;
+        }    
+</style>
+
+<section class="container mt-5">
+    <div class="about-us">
+        <h2 class="text-center mb-4">About Us</h2>
+        <p class="text-center">
+            Smart-Tech is an Information Technology Engineering and Consulting company, founded by Italian and Albanian shareholders. Our company operates in the field of Software Engineering, to provide information technology solutions and consulting for small to big-sized businesses.
+            Our customers are mainly located in Italy and Albania and come from many different sectors, but regardless of their industry, they share the same great challenge: They must design their IT infrastructure, in order to fulfill their business requirements and reduce costs at the same time.
+            Whenever the topic is information technology, Smart-Tech is the right partner.
+            Since October 2018 Smart-Tech is a Microsoft Partner.
+        </p>
+    </div>
+</section>
+
+<section class="container mt-5">
+    <div class="row">
+        <!-- Google Map (Left) -->
+        <div class="col-lg-6 mb-4">
+            <div class="map-container">
+                <h3>Our Location</h3>
+                <div class="ratio ratio-16x9">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d749.1333317664796!2d19.81769119999999!3d41.319014800000005!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x13503102bc2bc033%3A0x84ec4f418438ff8d!2sHekla%20Center!5e0!3m2!1sen!2s!4v1741171170683!5m2!1sen!2s" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Form (Right) -->
+        <div class="col-lg-6">
+            <div class="contact-form">
+                <h3>Contact Us</h3>
+                <form>
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" placeholder="Enter your name">
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" placeholder="Enter your email">
+                    </div>
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Message</label>
+                        <textarea class="form-control" id="message" rows="4" placeholder="Enter your message"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-envelope"></i> Send Email
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>

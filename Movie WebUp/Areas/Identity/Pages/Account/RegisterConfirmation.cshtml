@@ -1,0 +1,75 @@
+﻿@page
+@model RegisterConfirmationModel
+@{
+    ViewData["Title"] = "Confirm Your Email";
+}
+
+<style>
+    .confirmation-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 80vh;
+    }
+
+    .confirmation-card {
+        background: #1e1e1e;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 2px 2px 15px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        width: 400px;
+    }
+
+        .confirmation-card h1 {
+            color: #ffcc00;
+            margin-bottom: 15px;
+        }
+
+    .confirmation-text {
+        color: #fff;
+        margin-bottom: 20px;
+        font-size: 16px;
+    }
+
+    .confirm-button {
+        display: inline-block;
+        padding: 12px 20px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #1e1e1e;
+        background: #ffcc00;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.3s ease-in-out;
+        text-decoration: none;
+    }
+
+        .confirm-button:hover {
+            background: #e6b800;
+        }
+</style>
+<section style="min-height:100vh;">
+
+<div class="confirmation-container">
+    <div class="confirmation-card">
+        <h1>Confirm Your Email</h1>
+        @if (@Model.DisplayConfirmAccountLink)
+        {
+            <p class="confirmation-text">
+                Click the button below to confirm your account.
+            </p>
+            <a id="confirm-link" href="@Model.EmailConfirmationUrl" class="confirm-button">
+                Confirm Email
+            </a>
+        }
+        else
+        {
+            <p class="confirmation-text">
+                Please check your email to confirm your account.
+            </p>
+        }
+    </div>
+</div>
+</section>
